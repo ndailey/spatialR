@@ -141,7 +141,7 @@ It's hard to build a presence/absence model because we do not have absence data 
 
     ## [1] 8092   20
 
-# Predictive Model
+# Predictive Models
 ===========
 
 Now we fit the data to a model. We're going to split the data into East and West, because climate is dramatically different between these two halves of the country.
@@ -370,6 +370,10 @@ relationship toward the classification tree, but that is likely because
 it is categorical data and there will also be a higher level of
 variance. There is a positive correlation between the two tree types.
 
+# Map the Model
+
+## Current Bigfoot Habitat
+
 Let's see if our model can predict the location for bigfoot species in
 the Western (and Eastern) U.S.
 
@@ -434,6 +438,8 @@ the West) occur much more frequently in the East (which gets more
 rainfall and colder temperatures). We can't use the Western climate as a
 predictor for the entire US, and would have to do climate-specific data
 for the Eastern half of the US to get a more accurate prediction.
+
+## Bigfoot Habitat with Climate Change
 
 We can also estimate how bigfoot's habitat will shift based on climate
 change.
