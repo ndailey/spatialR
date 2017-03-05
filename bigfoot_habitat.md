@@ -46,7 +46,7 @@ First, read in the data and do some high level exploration with the help of some
 
 ![](images/2.png)
 
-# Predictors
+# Finding Bigfoot Predictors
 ==========
 
 We'll use climate data of the U.S. for our model. R can pull this data from online (you'll need to have wifi for the rest of the script to work).
@@ -87,12 +87,12 @@ We'll use climate data of the U.S. for our model. R can pull this data from onli
     plot(wrld_simpl, add=TRUE)
     points(bigfoot[i, ], pch=20, cex=1, col='red')
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-2-2.png)
+![](images/4.png)
 
     # plot illustrates part of bigfoot's ecological niche
     plot(bigfoot_clim[ ,'bio1'] / 10, bigfoot_clim[, 'bio12'], xlab='Annual Mean Temperature (C)', ylab='Annual Precipitation (mm)', cex = 0.3)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-2-3.png)
+![](images/5.png)
 
 It's hard to build a presence/absence model because we do not have absence data for bigfoot. Common trick to circumvent this is to model presence vs. 'random expectation' (background, random-absence data). This is would be the result if the species had no preference for any of the predictor variables. We take this data from the entire study area for which we have presence data.
 
@@ -141,7 +141,7 @@ It's hard to build a presence/absence model because we do not have absence data 
 
     ## [1] 8092   20
 
-# Fit a Model
+# Predictive Model
 ===========
 
 Now we fit the data to a model. We're going to split the data into East and West, because climate is dramatically different between these two halves of the country.
@@ -184,12 +184,12 @@ We'll build a classification and regression tree (CART) to determine under which
     # print the regression tree
     plotcp(cart)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-5-1.png)
+![](images/6.png)
 
     plot(cart, uniform=TRUE, main="Regression Tree")
     text(cart, cex=.8)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-5-2.png)
+![](images/7.png)
 
 Highest probability for our conditions is at the fourth split of our
 regression tree. Following the tree along the right side to our fourth
@@ -199,7 +199,7 @@ quarter below 21.85 degrees C, greater precipitation than 40.5mm, and
 the wettest quarter has a mean temperature less than or equal to 8.85
 degrees C. Sounds wet and chilly!
 
-Meaning behind the variables: 
+Statistically significant predictor variables: 
 * BIO4 &lt;= 86.79 (temperature seasonality)
 * BIO10 &lt;= 21.85 (mean temperature of warmest quarter)
 * BIO15 &gt; 40.5mm (precipitation seasonality) 
@@ -209,12 +209,12 @@ Meaning behind the variables:
 
 CART suffers from high variance, but Random Forest does not have that
 problem. We'll use both regression and classification here. The function
-'tuneRF' helps search for the optimal value (with respect to Out-of-Bag
+`tuneRF` helps search for the optimal value (with respect to Out-of-Bag
 error estimate) of mtry for randomForest. It returns a matrix whose
-first column contains the mtry values searched, and the second columne
-is the OOB error. The values of mt represent our definition of the
-predictor subset size m with particular values, in this case the minimum
-and maximum predictors. A small m (m=2 in this case) is helpful because
+first column contains the `mtry` values searched, and the second column
+is the OOB error. The values of `mt` represent our definition of the
+predictor subset size `m` with particular values, in this case the minimum
+and maximum predictors. A small `m` (`m=2` in this case) is helpful because
 we could have a large number of correlated predictors in our climate
 data (i.e., cold areas are likely correlated to high levels of
 precipitation).
@@ -238,7 +238,7 @@ precipitation).
     ## mtry = 8     OOB error = 10.14% 
     ## -0.0154321 0.05
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-6-1.png)
+![](images/8.png)
 
     trf
 
@@ -272,7 +272,7 @@ Now fit the random forest model.
 
     plot(crf)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-7-1.png)
+![](images/9.png)
 
     importance(crf)
 
@@ -299,7 +299,7 @@ Now fit the random forest model.
 
     varImpPlot(crf)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-7-2.png)
+![](images/10.png)
 
     rrf <- randomForest(dw[, 2:ncol(d)], dw[, 'pa'], mtry=mt)
 
@@ -321,7 +321,7 @@ Now fit the random forest model.
 
     plot(rrf)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-7-3.png)
+![](images/11.png)
 
     importance(rrf)
 
@@ -348,11 +348,11 @@ Now fit the random forest model.
 
     varImpPlot(rrf)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-7-4.png)
+![](images/12.png)
 
     plot(importance(rrf), importance(crf))
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-7-5.png)
+![](images/13.png)
 
 Both approaches are helping us understand which parameters have the
 highest node purity and have influence over our tree (i.e., the
@@ -374,7 +374,6 @@ Let's see if our model can predict the location for bigfoot species in
 the Western (and Eastern) U.S.
 
     library(sp)
-    library(raster)
 
     # predict for western US first
 
@@ -392,20 +391,20 @@ the Western (and Eastern) U.S.
     rp <- predict(clim_data, rrf, ext=ew)
     plot(rp)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-8-1.png)
+![](images/14.png)
 
     # isolate bigfoot habitat in western US
     eva <- evaluate(dw[dw$pa==1, ], dw[dw$pa==0, ], rrf)
     rc <- predict(clim_data, crf, ext=ew)
     plot(rc)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-8-2.png)
+![](images/15.png)
 
     # you can also get probabilities
     rc2 <- predict(clim_data, crf, ext=ew, type='prob', index=2)
     plot(rc2)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-8-3.png)
+![](images/16.png)
 
     de <- na.omit(de)
     eva2 <- evaluate(de[de$pa==1, ], de[de$pa==0, ], rrf)
@@ -426,7 +425,7 @@ the Western (and Eastern) U.S.
     # overlay bigfoot locations
     points(bigfoot[,1:2], cex=.2)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-8-4.png)
+![](images/17.png)
 
 It should be noted that Western climate data may be a poor analog for
 predicting climate change on the East Coast. This means cold and wet
@@ -450,6 +449,6 @@ change.
 
     plot(futusa, main = 'Future Bigfoot Habitat (given climate change)')
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-9-1.png)
+![](images/18.png)
 
 Bigfoot may need some help.
