@@ -1,11 +1,11 @@
 Objective
 =========
 
-Goal: Build a species distribution model for bigfoot. Specifically: 1.
-figure out where the habitat range of the species might be 2. how
-general the model can be by predicting from Western to Eastern
-sub-species in US 3. predict where in Mexico the creature is likely to
-occur 4. how climate change might affect its distribution
+Goal: Build a species distribution model for bigfoot. Specifically: 
+1. figure out where the habitat range of the species might be 
+2. how general the model can be by predicting from Western to Eastern sub-species in US 
+3. predict where in Mexico the creature is likely to occur 
+4. how climate change might affect its distribution
 
     # read in the data (long/lat values of bigfoot sightings)
     bigfoot <- read.csv("bigfoot.csv")
