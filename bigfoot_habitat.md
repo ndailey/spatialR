@@ -44,7 +44,7 @@ First, read in the data and do some high level exploration with the help of some
     data(wrld_simpl)
     plot(wrld_simpl, add=TRUE)
 
-![](images/1.png)
+![](images/2.png)
 
 # Predictors
 ==========
@@ -56,7 +56,7 @@ We'll use climate data of the U.S. for our model. R can pull this data from onli
     clim_data <- getData('worldclim', res=10, var='bio')
     plot(clim_data[[c(1,12)]], nr=2)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-2-1.png)
+![](images/3.png)
 
     # extract climate data for the locations of bigfoot sightings (the places bigfoot likes)
     bigfoot_clim <- extract(clim_data, bigfoot[,1:2])
