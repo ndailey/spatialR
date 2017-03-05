@@ -44,7 +44,7 @@ First, read in the data and do some high level exploration with the help of some
     data(wrld_simpl)
     plot(wrld_simpl, add=TRUE)
 
-![](spatialR/images/1.png)
+![](images/1.png)
 
 # Predictors
 ==========
