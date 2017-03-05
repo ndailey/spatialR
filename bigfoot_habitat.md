@@ -1,13 +1,16 @@
-Objective
+# Objective
 =========
 
-Goal: Build a species distribution model for bigfoot. Specifically: 
+Build a species distribution model for bigfoot. Specifically: 
+
 1. figure out where the habitat range of the species might be 
 2. how general the model can be by predicting from Western to Eastern sub-species in US 
 3. predict where in Mexico the creature is likely to occur 
 4. how climate change might affect its distribution
 
-    # read in the data (long/lat values of bigfoot sightings)
+First, read in the data and do some high level exploration with the help of some plots.
+
+    # read in long/lat values of bigfoot sightings
     bigfoot <- read.csv("bigfoot.csv")
     dim(bigfoot)
 
@@ -41,17 +44,19 @@ Goal: Build a species distribution model for bigfoot. Specifically:
     data(wrld_simpl)
     plot(wrld_simpl, add=TRUE)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-1-1.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-1-1.png)
 
-Predictors
+# Predictors
 ==========
+
+We'll use climate data of the U.S. for our model. R can pull this data from online (you'll need to have wifi for the rest of the script to work).
 
     # using climate data ('bioclimatic variables') for supervised classification
     library(raster)
     clim_data <- getData('worldclim', res=10, var='bio')
     plot(clim_data[[c(1,12)]], nr=2)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-2-1.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-2-1.png)
 
     # extract climate data for the locations of bigfoot sightings (the places bigfoot likes)
     bigfoot_clim <- extract(clim_data, bigfoot[,1:2])
@@ -82,22 +87,14 @@ Predictors
     plot(wrld_simpl, add=TRUE)
     points(bigfoot[i, ], pch=20, cex=1, col='red')
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-2-2.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-2-2.png)
 
     # plot illustrates part of bigfoot's ecological niche
     plot(bigfoot_clim[ ,'bio1'] / 10, bigfoot_clim[, 'bio12'], xlab='Annual Mean Temperature (C)', ylab='Annual Precipitation (mm)', cex = 0.3)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-2-3.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-2-3.png)
 
-Background Data
-===============
-
-It's hard to build a presence/absence model because we do not have
-absence data for bigfoot. Common trick to circumvent this is to model
-presence vs. 'random expectation' (background, random-absence data).
-This is would be the result if the species had no preference for any of
-the predictor variables. We take this data from the entire study area
-for which we have presence data.
+It's hard to build a presence/absence model because we do not have absence data for bigfoot. Common trick to circumvent this is to model presence vs. 'random expectation' (background, random-absence data). This is would be the result if the species had no preference for any of the predictor variables. We take this data from the entire study area for which we have presence data.
 
     library(dismo)
 
@@ -144,24 +141,19 @@ for which we have presence data.
 
     ## [1] 8092   20
 
-Fit a Model
+# Fit a Model
 ===========
 
-Now we fit the data to a model. We're going to split the data into East
-and West, because climate is dramatically different between these two
-halves of the country.
+Now we fit the data to a model. We're going to split the data into East and West, because climate is dramatically different between these two halves of the country.
 
     de <- d[bigfoot[,1] > -102, ]
     dw <- d[bigfoot[,1] <= -102, ]
 
-We split the bigfoot data along the 102 longitude line, which runs
-through the Dakotas, Nebraska, Kansas, Oklahoma, and Texas. This
-selection was arbitrary, but the Great Plains seemed like a good spot to
-split it.
+We split the bigfoot data along the 102 longitude line, which runs through the Dakotas, Nebraska, Kansas, Oklahoma, and Texas. This selection was arbitrary, but the Great Plains seemed like a good spot to split it.
 
-We'll build a classification and regression tree (CART) to determine
-under which environmental conditions we are most likely to see bigfoot.
-Starting with the western U.S.:
+## Regression Tree
+
+We'll build a classification and regression tree (CART) to determine under which environmental conditions we are most likely to see bigfoot. Starting with the western U.S.:
 
     library(rpart)
     cart <- rpart(pa~., data=dw)
@@ -192,12 +184,12 @@ Starting with the western U.S.:
     # print the regression tree
     plotcp(cart)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-5-1.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-5-1.png)
 
     plot(cart, uniform=TRUE, main="Regression Tree")
     text(cart, cex=.8)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-5-2.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-5-2.png)
 
 Highest probability for our conditions is at the fourth split of our
 regression tree. Following the tree along the right side to our fourth
@@ -207,10 +199,13 @@ quarter below 21.85 degrees C, greater precipitation than 40.5mm, and
 the wettest quarter has a mean temperature less than or equal to 8.85
 degrees C. Sounds wet and chilly!
 
-Meaning behind the variables: \* BIO4 &lt;= 86.79 (temperature
-seasonality) \* BIO10 &lt;= 21.85 (mean temperature of warmest quarter)
-\* BIO15 &gt; 40.5mm (precipitation seasonality) \* BIO8 &lt;= 8.85
-(mean temperature of wettest quarter)
+Meaning behind the variables: 
+* BIO4 &lt;= 86.79 (temperature seasonality)
+* BIO10 &lt;= 21.85 (mean temperature of warmest quarter)
+* BIO15 &gt; 40.5mm (precipitation seasonality) 
+* BIO8 &lt;= 8.85 (mean temperature of wettest quarter)
+
+## Random Forest
 
 CART suffers from high variance, but Random Forest does not have that
 problem. We'll use both regression and classification here. The function
@@ -243,7 +238,7 @@ precipitation).
     ## mtry = 8     OOB error = 10.14% 
     ## -0.0154321 0.05
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-6-1.png)
 
     trf
 
@@ -277,7 +272,7 @@ Now fit the random forest model.
 
     plot(crf)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-7-1.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-7-1.png)
 
     importance(crf)
 
@@ -304,7 +299,7 @@ Now fit the random forest model.
 
     varImpPlot(crf)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-7-2.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-7-2.png)
 
     rrf <- randomForest(dw[, 2:ncol(d)], dw[, 'pa'], mtry=mt)
 
@@ -326,7 +321,7 @@ Now fit the random forest model.
 
     plot(rrf)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-7-3.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-7-3.png)
 
     importance(rrf)
 
@@ -353,11 +348,11 @@ Now fit the random forest model.
 
     varImpPlot(rrf)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-7-4.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-7-4.png)
 
     plot(importance(rrf), importance(crf))
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-7-5.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-7-5.png)
 
 Both approaches are helping us understand which parameters have the
 highest node purity and have influence over our tree (i.e., the
@@ -397,20 +392,20 @@ the Western (and Eastern) U.S.
     rp <- predict(clim_data, rrf, ext=ew)
     plot(rp)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-8-1.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-8-1.png)
 
     # isolate bigfoot habitat in western US
     eva <- evaluate(dw[dw$pa==1, ], dw[dw$pa==0, ], rrf)
     rc <- predict(clim_data, crf, ext=ew)
     plot(rc)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-8-2.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-8-2.png)
 
     # you can also get probabilities
     rc2 <- predict(clim_data, crf, ext=ew, type='prob', index=2)
     plot(rc2)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-8-3.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-8-3.png)
 
     de <- na.omit(de)
     eva2 <- evaluate(de[de$pa==1, ], de[de$pa==0, ], rrf)
@@ -431,7 +426,7 @@ the Western (and Eastern) U.S.
     # overlay bigfoot locations
     points(bigfoot[,1:2], cex=.2)
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-8-4.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-8-4.png)
 
 It should be noted that Western climate data may be a poor analog for
 predicting climate change on the East Coast. This means cold and wet
@@ -455,6 +450,6 @@ change.
 
     plot(futusa, main = 'Future Bigfoot Habitat (given climate change)')
 
-![](Reimer_Lab15_files/figure-markdown_strict/unnamed-chunk-9-1.png)
+![](spatialR/figure-markdown_strict/unnamed-chunk-9-1.png)
 
 Bigfoot may need some help.
