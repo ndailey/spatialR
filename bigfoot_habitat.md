@@ -47,7 +47,6 @@ First, read in the data and do some high level exploration with the help of some
 ![](images/2.png)
 
 # Finding Bigfoot Predictors
-==========
 
 We'll use climate data of the U.S. for our model. R can pull this data from online (you'll need to have wifi for the rest of the script to work).
 
@@ -142,7 +141,6 @@ It's hard to build a presence/absence model because we do not have absence data 
     ## [1] 8092   20
 
 # Predictive Models
-===========
 
 Now we fit the data to a model. We're going to split the data into East and West, because climate is dramatically different between these two halves of the country.
 
