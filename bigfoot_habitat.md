@@ -451,4 +451,4 @@ change.
 
 ![](images/18.png)
 
-Bigfoot may need some help.
+Bigfoot may be spending a lot of time in the Pacific Northwest in the coming years. But they already have a music festival named after him, so he should feel right at home.
