@@ -44,7 +44,7 @@ First, read in the data and do some high level exploration with the help of some
     data(wrld_simpl)
     plot(wrld_simpl, add=TRUE)
 
-![](spatialR/figure-markdown_strict/unnamed-chunk-1-1.png)
+![](spatialR/images/1.png)
 
 # Predictors
 ==========
