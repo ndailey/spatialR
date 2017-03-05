@@ -1,5 +1,7 @@
-# Objective
+# Bigfoot's Changing Habitat
 =========
+
+# Objective
 
 Build a species distribution model for bigfoot. Specifically: 
 
